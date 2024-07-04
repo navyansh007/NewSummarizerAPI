@@ -1,9 +1,12 @@
 from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS, cross_origin
 from groq import Groq
 from exa_py import Exa
 import os
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 client = Groq(
     api_key=os.environ.get("GROQ_API_KEY")
@@ -13,6 +16,7 @@ exa = Exa(
 )
 
 @app.route('/')
+@cross_origin()
 def start():
     return render_template('index.html')
 
@@ -35,6 +39,7 @@ def getsearchquery(query):
     return chat_completion.choices[0].message.content.strip('"')
 
 @app.route('/fetchurls', methods=['POST'])
+@cross_origin()
 def fetchurls():
     search_query = getsearchquery(request.json['query'])
     search_response = exa.search_and_contents(
@@ -46,6 +51,7 @@ def fetchurls():
     })
 
 @app.route('/getsummary', methods=['POST'])
+@cross_origin()
 def getsummary():
     url = request.json['url']
     result = exa.get_contents(
